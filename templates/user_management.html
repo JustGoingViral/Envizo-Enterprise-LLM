@@ -1,0 +1,419 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5">User Management</h1>
+            <p class="lead">Create and manage user accounts for the Envizo AI Platform.</p>
+        </div>
+    </div>
+
+    <!-- Alert for displaying messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Create User Form -->
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <div class="card bg-dark">
+                <div class="card-header">
+                    <h5 class="mb-0">Create New User</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('create_user') }}">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required
+                                   value="{{ form.username.data or '' }}">
+                            {% if form.username.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.username.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required
+                                   value="{{ form.email.data or '' }}">
+                            {% if form.email.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.email.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name"
+                                   value="{{ form.full_name.data or '' }}">
+                            {% if form.full_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.full_name.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            {% if form.password.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.password.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            {% if form.confirm_password.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.confirm_password.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Role</label>
+                            <select class="form-select" id="role" name="role">
+                                {% for role_option in form.role.choices %}
+                                    <option value="{{ role_option[0] }}" {% if form.role.data == role_option[0] %}selected{% endif %}>
+                                        {{ role_option[1] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                <strong>Admin:</strong> Full system access including user management<br>
+                                <strong>Manager:</strong> Access to most features excluding system configuration<br>
+                                <strong>Analyst:</strong> Access to analytics and reporting<br>
+                                <strong>User:</strong> Basic access to query AI models
+                            </div>
+                            {% if form.role.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.role.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="is_active" name="is_active"
+                                   {% if form.is_active.data %}checked{% endif %}
+                                   value="true">
+                            <label class="form-check-label" for="is_active">Active</label>
+                            <div class="form-text">If unchecked, user will not be able to log in</div>
+                        </div>
+                        <div class="d-flex">
+                            <button type="submit" class="btn btn-primary">Create User</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-dark">
+                    <h5 class="mb-0">User Permissions</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Feature</th>
+                                <th>Admin</th>
+                                <th>Manager</th>
+                                <th>Analyst</th>
+                                <th>User</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Query Models</td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                            </tr>
+                            <tr>
+                                <td>View Analytics</td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Fine-Tuning</td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                            </tr>
+                            <tr>
+                                <td>API Key Management</td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                            </tr>
+                            <tr>
+                                <td>User Management</td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                            </tr>
+                            <tr>
+                                <td>System Configuration</td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                            </tr>
+                            <tr>
+                                <td>Server Management</td>
+                                <td><i class="bi bi-check-lg text-success"></i></td>
+                                <td><i class="bi bi-exclamation-circle text-warning"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                                <td><i class="bi bi-x text-danger"></i></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="small text-muted mt-2">
+                        <i class="bi bi-exclamation-circle text-warning"></i> Managers can view server status but cannot modify configurations
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Listing -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Existing Users</h5>
+                    <div>
+                        <button id="refresh-users-btn" class="btn btn-sm btn-outline-light me-2">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh
+                        </button>
+                        <button id="export-users-btn" class="btn btn-sm btn-outline-light">
+                            <i class="bi bi-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if users %}
+                                    {% for user in users %}
+                                        <tr>
+                                            <td>{{ user.username }}</td>
+                                            <td>{{ user.full_name }}</td>
+                                            <td>{{ user.email }}</td>
+                                            <td>
+                                                {% if user.role.name == 'ADMIN' %}
+                                                    <span class="badge bg-danger">Admin</span>
+                                                {% elif user.role.name == 'MANAGER' %}
+                                                    <span class="badge bg-warning">Manager</span>
+                                                {% elif user.role.name == 'ANALYST' %}
+                                                    <span class="badge bg-info">Analyst</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">User</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if user.is_active %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button class="btn btn-sm btn-outline-danger toggle-status-btn" 
+                                                            data-user-id="{{ user.id }}" 
+                                                            data-username="{{ user.username }}" 
+                                                            data-status="{% if user.is_active %}active{% else %}inactive{% endif %}">
+                                                        {% if user.is_active %}
+                                                            <i class="bi bi-lock"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-unlock"></i>
+                                                        {% endif %}
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-secondary reset-password-btn" 
+                                                            data-user-id="{{ user.id }}" 
+                                                            data-username="{{ user.username }}">
+                                                        <i class="bi bi-key"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4">
+                                            <em>No users found except your admin account. Create a new user above.</em>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if users and users|length > 10 %}
+                <div class="card-footer">
+                    <nav aria-label="User pagination">
+                        <ul class="pagination justify-content-center mb-0">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- User Status Toggle Modal -->
+    <div class="modal fade" id="toggleStatusModal" tabindex="-1" aria-labelledby="toggleStatusModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="toggleStatusModalLabel">Confirm User Status Change</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="toggle-status-message"></p>
+                    <p class="text-warning"><strong>Note:</strong> This will immediately affect user access to the system.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="toggle-status-form" method="POST" action="{{ url_for('toggle_user_status') }}">
+                        <input type="hidden" id="toggle-user-id" name="user_id">
+                        <button type="submit" class="btn btn-primary">Confirm</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resetPasswordModalLabel">Reset User Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to reset the password for user <strong id="reset-username"></strong>?</p>
+                    <p class="text-warning"><strong>Note:</strong> A temporary password will be generated and displayed once.</p>
+                    <form id="reset-password-form" method="POST" action="{{ url_for('reset_user_password') }}">
+                        <input type="hidden" id="reset-user-id" name="user_id">
+                        <div class="mb-3">
+                            <label for="admin-password" class="form-label">Your Admin Password</label>
+                            <input type="password" class="form-control" id="admin-password" name="admin_password" required>
+                            <div class="form-text">For security, please enter your password to confirm this action</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="reset-password-form" class="btn btn-warning">Reset Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle user status
+        document.querySelectorAll('.toggle-status-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                const username = this.dataset.username;
+                const currentStatus = this.dataset.status;
+                const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+                const messageElement = document.getElementById('toggle-status-message');
+                
+                document.getElementById('toggle-user-id').value = userId;
+                
+                if (newStatus === 'inactive') {
+                    messageElement.innerHTML = `Are you sure you want to <strong>deactivate</strong> user <strong>${username}</strong>?`;
+                } else {
+                    messageElement.innerHTML = `Are you sure you want to <strong>activate</strong> user <strong>${username}</strong>?`;
+                }
+                
+                const modal = new bootstrap.Modal(document.getElementById('toggleStatusModal'));
+                modal.show();
+            });
+        });
+        
+        // Reset password
+        document.querySelectorAll('.reset-password-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const userId = this.dataset.userId;
+                const username = this.dataset.username;
+                
+                document.getElementById('reset-user-id').value = userId;
+                document.getElementById('reset-username').textContent = username;
+                
+                const modal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
+                modal.show();
+            });
+        });
+        
+        // Refresh users button
+        document.getElementById('refresh-users-btn').addEventListener('click', function() {
+            window.location.reload();
+        });
+        
+        // Export users CSV
+        document.getElementById('export-users-btn').addEventListener('click', function() {
+            window.location.href = "{{ url_for('export_users') }}";
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5">API Key Management</h1>
+            <p class="lead">Create and manage your API keys for secure, programmatic access to the Envizo AI Platform.</p>
+        </div>
+    </div>
+
+    <!-- Alert for displaying messages -->
+    <div id="api-key-alert" style="display: none;" class="alert alert-info alert-dismissible fade show" role="alert">
+        <span id="api-key-alert-message"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- New Key Generation Section -->
+    <div class="row mb-4">
+        <div class="col-md-8 col-lg-6">
+            <div class="card bg-dark">
+                <div class="card-header">
+                    <h5 class="mb-0">Create New API Key</h5>
+                </div>
+                <div class="card-body">
+                    <form id="create-api-key-form" method="POST" action="{{ url_for('create_api_key') }}">
+                        <div class="mb-3">
+                            <label for="key-name" class="form-label">Key Name</label>
+                            <input type="text" class="form-control" id="key-name" name="key_name" required
+                                placeholder="e.g., Production, Development, Testing">
+                            <div class="form-text">Give your key a descriptive name to identify its purpose.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="key-expiry" class="form-label">Expiration</label>
+                            <select class="form-select" id="key-expiry" name="expiry_days">
+                                <option value="30">30 days</option>
+                                <option value="90">90 days</option>
+                                <option value="180">180 days</option>
+                                <option value="365">1 year</option>
+                                <option value="0" selected>No expiration</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Generate New Key</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recently Created Key Alert (only shown after key creation) -->
+    {% if new_key %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-success">
+                <h5 class="alert-heading">Your new API key has been created</h5>
+                <p class="mb-0">Please copy your API key now. For security reasons, it won't be displayed again.</p>
+                <hr>
+                <div class="row align-items-center">
+                    <div class="col">
+                        <code class="bg-dark p-2 d-block">{{ new_key }}</code>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-sm btn-secondary copy-btn" data-clipboard-text="{{ new_key }}">
+                            <i class="bi bi-clipboard"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Existing Keys Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Your API Keys</h5>
+                    <button id="refresh-keys-btn" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Key Prefix</th>
+                                    <th>Created</th>
+                                    <th>Expires</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="api-keys-table-body">
+                                {% if api_keys %}
+                                    {% for key in api_keys %}
+                                    <tr>
+                                        <td>{{ key.name }}</td>
+                                        <td><code>{{ key.key[:8] }}...</code></td>
+                                        <td>{{ key.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            {% if key.expires_at %}
+                                                {{ key.expires_at.strftime('%Y-%m-%d') }}
+                                                {% if key.expires_at < current_time %}
+                                                    <span class="badge bg-danger">Expired</span>
+                                                {% elif (key.expires_at - current_time).days < 7 %}
+                                                    <span class="badge bg-warning">Soon</span>
+                                                {% endif %}
+                                            {% else %}
+                                                Never
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if key.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Revoked</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if key.is_active %}
+                                                <button class="btn btn-sm btn-outline-danger revoke-key-btn" 
+                                                    data-key-id="{{ key.id }}" data-key-name="{{ key.name }}">
+                                                    Revoke
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-sm btn-outline-secondary" disabled>Revoked</button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">
+                                            <em>No API keys found. Generate your first key above.</em>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Usage Guidelines -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-dark border-info">
+                <div class="card-header">
+                    <h5 class="mb-0">Using Your API Keys</h5>
+                </div>
+                <div class="card-body">
+                    <h6>Authentication</h6>
+                    <p>Include your API key in the request headers:</p>
+                    <pre><code>Authorization: Bearer YOUR_API_KEY</code></pre>
+                    
+                    <h6 class="mt-4">Example Request</h6>
+                    <pre><code>curl -X POST https://your-domain.com/api/v1/generate \
+    -H "Authorization: Bearer YOUR_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "prompt": "Explain artificial intelligence in simple terms.",
+      "model": "envizo-7b-base",
+      "max_tokens": 256
+    }'</code></pre>
+                    
+                    <div class="alert alert-info mt-4 mb-0">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        See our <a href="#" class="alert-link">API documentation</a> for complete details on endpoints and parameters.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revoke Confirmation Modal -->
+    <div class="modal fade" id="revokeKeyModal" tabindex="-1" aria-labelledby="revokeKeyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="revokeKeyModalLabel">Confirm Key Revocation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to revoke the API key "<span id="revoke-key-name"></span>"?</p>
+                    <p class="text-danger"><strong>Warning:</strong> This action cannot be undone. Any applications using this key will lose access.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="revoke-key-form" method="POST" action="{{ url_for('revoke_api_key') }}">
+                        <input type="hidden" id="revoke-key-id" name="key_id">
+                        <button type="submit" class="btn btn-danger">Revoke Key</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize clipboard.js
+        var clipboard = new ClipboardJS('.copy-btn');
+        
+        clipboard.on('success', function(e) {
+            var btn = e.trigger;
+            var originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check"></i> Copied!';
+            setTimeout(function() {
+                btn.innerHTML = originalText;
+            }, 2000);
+            e.clearSelection();
+        });
+        
+        // Setup event listeners for revoke buttons
+        document.querySelectorAll('.revoke-key-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var keyId = this.dataset.keyId;
+                var keyName = this.dataset.keyName;
+                document.getElementById('revoke-key-id').value = keyId;
+                document.getElementById('revoke-key-name').textContent = keyName;
+                var revokeModal = new bootstrap.Modal(document.getElementById('revokeKeyModal'));
+                revokeModal.show();
+            });
+        });
+        
+        // Refresh keys button functionality
+        document.getElementById('refresh-keys-btn').addEventListener('click', function() {
+            window.location.reload();
+        });
+    });
+</script>
+{% endblock %}

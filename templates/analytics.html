@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Analytics Dashboard</h1>
+        <p class="lead">Analyze and visualize your Enterprise LLM Platform usage</p>
+    </div>
+</div>
+
+<!-- Date range and controls -->
+<div class="row mb-4">
+    <div class="col-lg-8 col-md-12 mb-4 mb-lg-0">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex flex-wrap">
+                    <div class="me-3 mb-3 mb-md-0">
+                        <label for="date-range-selector" class="form-label">Time Period</label>
+                        <select class="form-select" id="date-range-selector">
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="last_7_days" selected>Last 7 Days</option>
+                            <option value="last_30_days">Last 30 Days</option>
+                            <option value="this_month">This Month</option>
+                            <option value="last_month">Last Month</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    <div class="d-none" id="custom-date-range">
+                        <div class="d-flex flex-wrap">
+                            <div class="me-3 mb-3 mb-md-0">
+                                <label for="start-date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="start-date">
+                            </div>
+                            <div class="mb-3 mb-md-0">
+                                <label for="end-date" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="end-date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ms-auto mt-auto">
+                        <button class="btn btn-outline-secondary">
+                            <i class="bi bi-download"></i> <span class="d-none d-sm-inline">Export</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12">
+        <div class="card bg-dark text-white">
+            <div class="card-body">
+                <h5 class="card-title">Total Queries</h5>
+                <h2 class="display-4 mb-0">--</h2>
+                <p class="text-muted mb-0">No data available</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GPU Utilization Heatmap -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                <h5 class="mb-0 me-2">Real-time GPU Utilization</h5>
+                <div class="d-flex flex-wrap mt-2 mt-sm-0">
+                    <button id="seed-demo-data" class="btn btn-sm btn-outline-primary me-2 mb-2 mb-sm-0">
+                        <i class="bi bi-database"></i> <span class="d-none d-sm-inline">Seed Demo Data</span>
+                    </button>
+                    <button id="refresh-heatmap" class="btn btn-sm btn-outline-secondary me-2 mb-2 mb-sm-0">
+                        <i class="bi bi-arrow-repeat"></i> <span class="d-none d-sm-inline">Refresh</span>
+                    </button>
+                    <span class="text-muted d-none d-md-inline" id="last-updated"></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="gpu-utilization-heatmap">
+                    <div class="d-flex flex-column justify-content-center align-items-center py-4" id="heatmap-loading">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted">Loading GPU utilization data...</p>
+                    </div>
+                    <div id="heatmap-container" style="display: none;">
+                        <div class="row">
+                            <div class="col-lg-9 col-md-8 col-sm-12 mb-3 mb-md-0">
+                                <div id="heatmap-visualization" style="height: 280px;"></div>
+                            </div>
+                            <div class="col-lg-3 col-md-4 col-sm-12">
+                                <div class="d-flex flex-column h-100 justify-content-between">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Server Status</h6>
+                                            <div id="server-status-list" class="mt-3">
+                                                <p class="text-muted">No active GPU servers</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <div class="d-flex flex-wrap align-items-center">
+                                    <span class="me-2 mb-2">Utilization: </span>
+                                    <div class="heatmap-legend d-flex mb-2" style="height: 20px; max-width: 100%; overflow-x: auto;">
+                                        <div style="background-color: rgba(0, 200, 83, 0.2); width: 30px;"></div>
+                                        <div style="background-color: rgba(0, 200, 83, 0.4); width: 30px;"></div>
+                                        <div style="background-color: rgba(0, 200, 83, 0.6); width: 30px;"></div>
+                                        <div style="background-color: rgba(0, 200, 83, 0.8); width: 30px;"></div>
+                                        <div style="background-color: rgba(0, 200, 83, 1.0); width: 30px;"></div>
+                                        <div style="background-color: rgba(255, 193, 7, 0.6); width: 30px;"></div>
+                                        <div style="background-color: rgba(255, 193, 7, 0.8); width: 30px;"></div>
+                                        <div style="background-color: rgba(255, 193, 7, 1.0); width: 30px;"></div>
+                                        <div style="background-color: rgba(244, 67, 54, 0.8); width: 30px;"></div>
+                                        <div style="background-color: rgba(244, 67, 54, 1.0); width: 30px;"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between w-100 w-md-auto" style="max-width: 300px; margin-left: 5px;">
+                                        <span>0%</span>
+                                        <span class="mx-auto">50%</span>
+                                        <span>100%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="heatmap-no-data" style="display: none;">
+                        <div class="alert alert-info">
+                            <p class="mb-0">No GPU servers are currently available or configured. Please add server nodes in the admin panel.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts row -->
+<div class="row mb-4">
+    <div class="col-lg-8 col-md-12 mb-4 mb-lg-0">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Query Volume Over Time</h5>
+            </div>
+            <div class="card-body">
+                <div id="query-volume-chart" style="height: 280px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-12">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Model Usage</h5>
+            </div>
+            <div class="card-body">
+                <div id="model-usage-chart" style="height: 280px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Metrics row -->
+<div class="row mb-4">
+    <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Avg. Response Time</h6>
+                <h3 class="mb-0">--</h3>
+                <small class="text-muted">milliseconds</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-3 mb-lg-0">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Cache Hit Rate</h6>
+                <h3 class="mb-0">--</h3>
+                <small class="text-muted">percent</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3 mb-3 mb-sm-0">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Avg. Tokens / Query</h6>
+                <h3 class="mb-0">--</h3>
+                <small class="text-muted">tokens</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <h6 class="text-muted">Error Rate</h6>
+                <h3 class="mb-0">--</h3>
+                <small class="text-muted">percent</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent queries table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                <h5 class="mb-0 me-2">Recent Queries</h5>
+                <button id="view-all-queries" class="btn btn-sm btn-outline-secondary mt-2 mt-sm-0">View All</button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>User</th>
+                                <th class="d-none d-md-table-cell">Query</th>
+                                <th class="d-none d-sm-table-cell">Model</th>
+                                <th class="d-none d-lg-table-cell">Response Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center">No query data available yet. Data will appear here as users interact with the LLM platform.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-block d-md-none mt-3">
+                    <div class="alert alert-info">
+                        <small class="mb-0">Swipe horizontally to see all data or rotate your device to landscape mode for a better view.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}

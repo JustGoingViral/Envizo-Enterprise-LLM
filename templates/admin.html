@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Admin Dashboard</h1>
+        <p class="lead">Configure and manage your Enterprise LLM Platform</p>
+        <div class="d-flex justify-content-end mb-3">
+            <button id="seedDataBtn" class="btn btn-outline-primary">
+                <i class="bi bi-database-fill"></i> Seed Demo Data
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="list-group">
+            <a href="#user-management" class="list-group-item list-group-item-action active" data-bs-toggle="tab">User Management</a>
+            <a href="#llm-servers" class="list-group-item list-group-item-action" data-bs-toggle="tab">LLM Servers</a>
+            <a href="#models" class="list-group-item list-group-item-action" data-bs-toggle="tab">Models</a>
+            <a href="#api-keys" class="list-group-item list-group-item-action" data-bs-toggle="tab">API Keys</a>
+            <a href="#system-backup" class="list-group-item list-group-item-action" data-bs-toggle="tab">Backup & Restore</a>
+            <a href="#system-settings" class="list-group-item list-group-item-action" data-bs-toggle="tab">System Settings</a>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <div class="tab-content">
+            <!-- User Management Tab -->
+            <div class="tab-pane fade show active" id="user-management">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Users</h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newUserModal">Add User</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-responsive">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>admin</td>
+                                        <td>admin@example.com</td>
+                                        <td><span class="badge bg-danger">Admin</span></td>
+                                        <td><span class="badge bg-success">Active</span></td>
+                                        <td>{{ now }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-secondary">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger">Disable</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LLM Servers Tab -->
+            <div class="tab-pane fade" id="llm-servers">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">LLM Server Nodes</h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newServerModal">Add Server</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-responsive">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Host</th>
+                                        <th>GPUs</th>
+                                        <th>Status</th>
+                                        <th>Load</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="7" class="text-center">No server nodes configured yet. Add a server to get started.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Models Tab -->
+            <div class="tab-pane fade" id="models">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">LLM Models</h5>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newModelModal">Add Model</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-responsive">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Name</th>
+                                        <th>Version</th>
+                                        <th>Parameters</th>
+                                        <th>Quantization</th>
+                                        <th>Fine-tuned</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="7" class="text-center">No models configured yet. Add a model to get started.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other Tabs -->
+            <div class="tab-pane fade" id="api-keys">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">API Keys</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>API key management coming soon.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="system-backup">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Backup & Restore</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>System backup and restore functionality coming soon.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="system-settings">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">System Settings</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>System settings configuration coming soon.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New User Modal -->
+<div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newUserModalLabel">Add New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newUserForm">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fullName" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="fullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role" required>
+                            <option value="USER">User</option>
+                            <option value="ANALYST">Analyst</option>
+                            <option value="MANAGER">Manager</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Add User</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

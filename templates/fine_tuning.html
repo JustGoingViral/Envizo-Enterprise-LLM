@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="mb-4">Fine-Tuning Dashboard</h1>
+        <p class="lead">Customize foundation models to match your organization's specific needs</p>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Fine-Tuning Jobs</h5>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newJobModal">New Fine-Tuning Job</button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Base Model</th>
+                                <th>Created</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center">No fine-tuning jobs have been created yet. Click "New Fine-Tuning Job" to get started.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Available Base Models</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Mistral-7B</h6>
+                            <small>7B parameters</small>
+                        </div>
+                        <p class="mb-1">General purpose instruction-tuned model</p>
+                        <small class="text-muted">Suitable for most enterprise use cases</small>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">LLaMA 3-8B</h6>
+                            <small>8B parameters</small>
+                        </div>
+                        <p class="mb-1">Powerful foundation model from Meta AI</p>
+                        <small class="text-muted">Optimal for detailed reasoning and code generation</small>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">Gemma-7B</h6>
+                            <small>7B parameters</small>
+                        </div>
+                        <p class="mb-1">Lightweight efficient model from Google</p>
+                        <small class="text-muted">Good balance between cost and performance</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Fine-Tuning Documentation</h5>
+            </div>
+            <div class="card-body">
+                <h6>How to Prepare Training Data</h6>
+                <p>The Enterprise LLM Platform accepts training data in the following formats:</p>
+                <ul>
+                    <li><strong>JSON Lines (.jsonl)</strong> - One conversation per line in the format <code>{"prompt": "...", "response": "..."}</code></li>
+                    <li><strong>CSV</strong> - Two columns with headers "prompt" and "response"</li>
+                    <li><strong>Excel (.xlsx)</strong> - Two columns with headers "prompt" and "response"</li>
+                </ul>
+                
+                <h6>Fine-Tuning Best Practices</h6>
+                <ul>
+                    <li>Include at least 100 examples for best results</li>
+                    <li>Ensure data quality by reviewing samples before fine-tuning</li>
+                    <li>Follow the input format expected by the base model</li>
+                    <li>Split your data into training (80%) and validation (20%) sets</li>
+                    <li>Keep input/output lengths reasonable (under 2048 tokens)</li>
+                </ul>
+                
+                <h6>Fine-Tuning Parameters</h6>
+                <p>The following hyperparameters can be adjusted:</p>
+                <ul>
+                    <li><strong>Learning Rate</strong> - Typically 1e-5 to 5e-5 for most models</li>
+                    <li><strong>Batch Size</strong> - 4-8 for most GPU configurations</li>
+                    <li><strong>Epochs</strong> - 3-5 is usually sufficient</li>
+                    <li><strong>LoRA Rank</strong> - 8-64 depending on model size and task complexity</li>
+                    <li><strong>LoRA Alpha</strong> - 16-64, usually 2x the rank value</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Fine-Tuning Job Modal -->
+<div class="modal fade" id="newJobModal" tabindex="-1" aria-labelledby="newJobModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="newJobModalLabel">New Fine-Tuning Job</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newJobForm">
+                    <div class="mb-3">
+                        <label for="jobName" class="form-label">Job Name</label>
+                        <input type="text" class="form-control" id="jobName" placeholder="E.g., Customer Support Assistant" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="baseModel" class="form-label">Base Model</label>
+                        <select class="form-select" id="baseModel" required>
+                            <option value="" selected disabled>Select a base model</option>
+                            <option value="mistral-7b">Mistral-7B</option>
+                            <option value="llama-3-8b">LLaMA 3-8B</option>
+                            <option value="gemma-7b">Gemma-7B</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="trainingFile" class="form-label">Training Data</label>
+                        <input type="file" class="form-control" id="trainingFile" accept=".jsonl,.csv,.xlsx" required>
+                        <small class="form-text text-muted">JSONL, CSV, or Excel file with prompt-response pairs</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="validationFile" class="form-label">Validation Data (Optional)</label>
+                        <input type="file" class="form-control" id="validationFile" accept=".jsonl,.csv,.xlsx">
+                        <small class="form-text text-muted">If not provided, 20% of training data will be used for validation</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="jobDescription" class="form-label">Job Description (Optional)</label>
+                        <textarea class="form-control" id="jobDescription" rows="3" placeholder="Describe the purpose of this fine-tuning job"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Advanced Options</label>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="learningRate" class="form-label">Learning Rate</label>
+                                            <input type="number" class="form-control" id="learningRate" value="2e-5" step="0.00001" min="0.00001" max="0.001">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="batchSize" class="form-label">Batch Size</label>
+                                            <input type="number" class="form-control" id="batchSize" value="4" min="1" max="32">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="epochs" class="form-label">Epochs</label>
+                                            <input type="number" class="form-control" id="epochs" value="3" min="1" max="20">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="loraRank" class="form-label">LoRA Rank</label>
+                                            <input type="number" class="form-control" id="loraRank" value="16" min="4" max="256">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="loraAlpha" class="form-label">LoRA Alpha</label>
+                                            <input type="number" class="form-control" id="loraAlpha" value="32" min="4" max="256">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="startFineTuningBtn">Start Fine-Tuning</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle form submission
+    const startFineTuningBtn = document.getElementById('startFineTuningBtn');
+    if (startFineTuningBtn) {
+        startFineTuningBtn.addEventListener('click', function() {
+            alert('Fine-tuning functionality will be implemented in a future update.');
+        });
+    }
+    
+    // Show/hide model details
+    const baseModelSelect = document.getElementById('baseModel');
+    if (baseModelSelect) {
+        baseModelSelect.addEventListener('change', function() {
+            // In a real implementation, this would display model-specific information
+            console.log('Selected model:', this.value);
+        });
+    }
+});
+</script>
+{% endblock %}

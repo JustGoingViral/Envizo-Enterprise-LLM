@@ -1,0 +1,41 @@
+==============================================================================
+                   !!!  CRITICAL DEPLOYMENT NOTICE  !!!
+==============================================================================
+
+Your deployment WILL FAIL unless you make the following changes:
+
+1. CHANGE THE RUN COMMAND in deployment settings to:
+   gunicorn --bind 0.0.0.0:5000 --workers 4 main:app
+
+2. DO NOT USE: uvicorn app:app --host 0.0.0.0 --port 5000
+   This will cause database connection errors with the sslmode parameter!
+
+3. ENSURE ALL DATABASE URLS have ?sslmode=require as a query parameter
+   Example: postgresql://user:password@host:port/database?sslmode=require
+   
+4. Two valid approaches for SSL with asyncpg (NEVER mix them):
+   
+   A) URL Parameter Approach (CURRENT IMPLEMENTATION):
+      - Include sslmode in URL: postgresql+asyncpg://user:pass@host:port/db?sslmode=require
+         NOTE: Despite some sources saying otherwise, ?sslmode=require DOES work with recent asyncpg
+      - DO NOT use connect_args={"sslmode": "require"}
+   
+   B) SSL Context Approach (ALTERNATIVE):
+      - Use standard URL: postgresql+asyncpg://user:pass@host:port/db
+      - Use connect_args={"ssl": ssl_context} with proper SSL context
+      
+   The critical error happens when trying to use both approaches simultaneously.
+
+==============================================================================
+                           ENVIRONMENT VARIABLES
+==============================================================================
+
+Required variables:
+- SESSION_SECRET (a secure random string)
+- DATABASE_URL (with ?sslmode=require)
+- ENVIRONMENT=production
+- DEBUG=false
+
+See DEPLOYMENT_INSTRUCTIONS.md for complete details.
+
+==============================================================================
